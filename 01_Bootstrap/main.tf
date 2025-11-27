@@ -10,6 +10,8 @@ module "s3_backend" {
 
   bucket = var.bucket_name
   tags   = var.tags
+  # Forzar destrucción del terraform sin necesidad de tener que eliminar manualmente en AWS
+  force_destroy = true
 
   # Requerimientos de seguridad 
   # Requerimientos de seguridad (Bloqueo de acceso público)
