@@ -34,6 +34,15 @@ private_inbound_acl_rules = [
       to_port     = 65535
       cidr_block  = "0.0.0.0/0"
     }
+    {
+      # Permitir tráfico HTTP (80) interno (desde el ALB)
+      rule_number = 102
+      rule_action = "allow"
+      protocol    = "tcp"
+      from_port   = 80
+      to_port     = 80
+      cidr_block  = "10.0.0.0/16" # Rango CIDR de su VPC
+    }
   ]
 
   # Configurar 3 subredes privadas y 3 públicas
