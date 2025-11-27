@@ -1,118 +1,74 @@
-# Despliegue Profesional "The Cheese Factory"
+# 🧀 The Cheese Factory | AWS Infrastructure
 
-Este repositorio contiene el despliegue de la infraestructura para la aplicación "The Cheese Factory" en AWS, utilizando Terraform.
+![Terraform](https://img.shields.io/badge/terraform-%235835CC.svg?style=for-the-badge&logo=terraform&logoColor=white)
+![AWS](https://img.shields.io/badge/AWS-%23FF9900.svg?style=for-the-badge&logo=amazon-aws&logoColor=white)
+![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
+![Status](https://img.shields.io/badge/status-stable-green?style=for-the-badge)
 
-El objetivo es demostrar el uso de prácticas avanzadas de DevOps (IaC), incluyendo la gestión de estado remoto, el uso de módulos públicos verificados y la implementación de una arquitectura de red segura (VPC personalizada) que sigue el principio de mínimo privilegio.
+> **Infraestructura como Código (IaC)** para el despliegue automatizado, seguro y escalable de la aplicación distribuida "The Cheese Factory".
 
-## Arquitectura de la Infraestructura
+## 📋 Descripción del Proyecto
 
-La arquitectura desplegada consta de los siguientes componentes:
+Este repositorio contiene la definición declarativa de la infraestructura necesaria para ejecutar la aplicación web "The Cheese Factory" en Amazon Web Services (AWS).
 
-* **Red (VPC):** Se utiliza el módulo `terraform-aws-modules/vpc/aws` para crear una VPC personalizada. Esta VPC se divide en 3 subredes públicas y 3 subredes privadas, distribuidas en tres Zonas de Disponibilidad.
-* **Balanceador de Carga (ALB):** Un Application Load Balancer público se despliega en las subredes públicas para recibir el tráfico web.
-* **Servidores de Aplicación (EC2):** Tres instancias EC2 se despliegan en las subredes privadas. Estas instancias ejecutan la aplicación de quesos en contenedores Docker y no son accesibles directamente desde Internet.
-***Estado Remoto (Backend):** El estado de Terraform (`.tfstate`) se almacena de forma segura en un bucket S3 privado y versionado, con bloqueo de estado gestionado por DynamoDB.
+El proyecto demuestra competencias avanzadas en **DevOps**, implementando una arquitectura de 3 capas, gestión de estado remoto con bloqueo (State Locking), y principios de seguridad de **Mínimo Privilegio**.
 
-## Características Técnicas Implementadas
+### 🏗️ Arquitectura de Alto Nivel
 
-Este proyecto cumple con todos los requisitos técnicos de la actividad:
+El tráfico fluye desde internet hacia un balanceador de carga público, el cual distribuye las peticiones hacia contenedores aislados en redes privadas.
 
-* **Gestión de Código:** El proyecto está gestionado en Git e incluye un archivo `terraform.tfvars.example`[cite: 22].
-* **Estado Remoto:** El backend S3 se crea como infraestructura separada en un directorio `s3-backend-bootstrap`, cumpliendo con el requisito de desacoplamiento.
-* **Modularidad (Módulos Públicos):**
-    * `terraform-aws-modules/vpc/aws` para la red.
-    * `terraform-aws-modules/s3-bucket/aws` para el bucket del backend.
-* **Seguridad (Mínimo Privilegio):**
-    * **ALB Security Group:** Permite HTTP (80) desde Internet (`0.0.0.0/0`).
-    * **EC2 Security Group:** Permite HTTP (80) **únicamente** desde el Security Group del ALB y SSH (22) **únicamente** desde la IP local (definida en `terraform.tfvars`).
-* **Lógica Condicional:**
-    * El tipo de instancia EC2 cambia según la variable `environment`.
-    * `environment = "prod"` despliega `t3.small`.
-    * `environment = "dev"` despliega `t2.micro`.
+```mermaid
+graph TD
+    User((Internet)) --> ALB[Application Load Balancer]
+    subgraph VPC [VPC Personalizada]
+        subgraph Public_Subnets [Subredes Públicas]
+            ALB
+        end
+        subgraph Private_Subnets [Subredes Privadas]
+            EC2_1[EC2 Container A]
+            EC2_2[EC2 Container B]
+            EC2_3[EC2 Container C]
+        end
+    end
+    ALB --> EC2_1
+    ALB --> EC2_2
+    ALB --> EC2_3
+    Terraform -->|State Lock| DynamoDB
+    Terraform -->|State Storage| S3_Bucket
 
-## Estructura del Repositorio
+🚀 Características Técnicas
+Este despliegue cumple con estándares de industria:
+'
+CaracterísticaImplementaciónRed SeguraVPC Personalizada con separación estricta entre subredes Públicas (ALB) y Privadas (App).Alta DisponibilidadDistribución en 3 Zonas de Disponibilidad (AZs) con Load Balancing automático.Gestión de EstadoBackend remoto en S3 con bloqueo de concurrencia vía DynamoDB (evita corrupción de estado).Seguridad (SG)ALB: Solo puerto 80 desde 0.0.0.0/0.  EC2: Solo tráfico HTTP proveniente del Security Group del ALB.ModularidadUso de módulos oficiales verificados (terraform-aws-modules).Lógica CondicionalAdaptabilidad de entorno: prod (t3.small) vs dev (t2.micro).📂 Estructura del RepositorioEl proyecto sigue una estrategia de Monorepo dividido por ciclo de vida:Bash.
+├── 01_Bootstrap/          # [Fase 1] Infraestructura para el Backend (S3 + DynamoDB)
+│   ├── main.tf
+│   └── ...
+├── 02_Infraestructura/    # [Fase 2] Infraestructura Principal (VPC, ALB, EC2)
+│   ├── main.tf
+│   ├── variables.tf
+│   ├── terraform.tfvars   # (No versionado, ver .example)
+│   └── ...
+└── README.md
+🛠️ Requisitos PreviosEste proyecto ha sido desarrollado y validado en el siguiente entorno:SO: Ubuntu 22.04 LTS / 24.04 LTS (VMware Workstation)Terraform CLI: >= 1.5.0AWS CLI: Configurado con credenciales válidas (aws configure)⚙️ Configuración (Variables)El comportamiento de la infraestructura se controla mediante terraform.tfvars. Copia el archivo de ejemplo para comenzar:Bashcp 02_Infraestructura/terraform.tfvars.example 02_Infraestructura/terraform.tfvars
+Tabla de Variables PrincipalesVariableDescripciónValor Ejemploaws_regionRegión de despliegue AWSus-east-1environmentDefine el tier (dev o prod)devinstance_type(Opcional) Sobrescribe el tipo de instanciat2.micromy_ipTu IP pública para administración SSH190.x.x.x/32docker_imagesLista de imágenes a desplegar["errm/cheese:cheddar", ...]⚡ Guía de DespliegueSigue este orden estricto para levantar la infraestructura correctamente.Fase 1: Bootstrap (Backend S3)Primero debemos crear el lugar donde Terraform guardará su memoria.Bashcd 01_Bootstrap
+terraform init
+terraform apply -auto-approve
+Nota: Al finalizar, toma nota del nombre del bucket y la tabla DynamoDB generados. Deberás configurarlos en el backend.tf de la siguiente fase si no están automatizados.Fase 2: Infraestructura Principal (The Cheese Factory)Despliegue de la red y la aplicación.Bashcd ../02_Infraestructura
 
-El repositorio está dividido en dos proyectos independientes:<br />
-├── 1-s3-backend-bootstrap/ # Proyecto para crear el bucket S3 y la tabla DynamoDB <br />
-└── 2-BP3Quesos/ # Proyecto principal de la infraestructura (VPC, ALB, EC2)
+# 1. Inicializar (descarga módulos y conecta con S3)
+terraform init
 
+# 2. Planificar (Previsualización de cambios)
+terraform plan
 
-Este proyecto fue desarrollado y probado localmente en:
+# 3. Aplicar (Despliegue real en AWS)
+terraform apply -auto-approve
+✅ Verificación y PruebasUna vez finalizado el apply, Terraform mostrará un output llamado resumen_final o alb_dns_name.Copia el DNS del Load Balancer (ej. cheese-lb-12345.us-east-1.elb.amazonaws.com).Pégalo en tu navegador.Refresca la página varias veces (F5): Deberás ver cómo el Load Balancer alterna entre los diferentes tipos de quesos (contenedores) servidos por las distintas instancias.🗑️ Destrucción de RecursosPara evitar costos en AWS, destruye la infraestructura en orden inverso:Bash# 1. Destruir Aplicación
+cd 02_Infraestructura
+terraform destroy -auto-approve
 
-- **Sistema operativo**: Ubuntu 22.04 LTS (máquina virtual en VMware Workstation Pro)
-- **Herramientas**:
-  - Terraform CLI
-  - AWS CLI
-  - Visual Studio Code
-  - Git
-  - Docker
-Este entorno permite ejecutar los comandos de Terraform, editar archivos `.tf` y realizar pruebas previas al despliegue en AWS.
-
-
-## Variables personalizables
-
-El archivo `terraform.tfvars` permite ajustar la infraestructura sin modificar los archivos principales. Aquí se definen:
-
-```hcl
-aws_region    = "us-east-1"
-instance_type = "t2.micro"
-my_ip         = "0.0.0.0/0"
-docker_images = [ 
-  "errm/cheese:wensleydale",
-  "errm/cheese:cheddar",
-  "errm/cheese:stilton"
-]
-```
-
-
-## Despliegue paso a paso
-
-Sigue estos pasos para desplegar la infraestructura y visualizar la aplicación web distribuida:
-
-__1. Clonar el repositorio.__
-```
-git clone https://github.com/bapp86/BP3Quesos.git
-cd BP3Quesos
-```
-__2. Configurar las variables.__
-
-Edita el archivo terraform.tfvars o crea uno nuevo a partir de terraform.tfvars.example:
-```
-cp terraform.tfvars.example terraform.tfvars
-```
-
-- __Ajusta los valores según el entorno:__
-
-  - __aws_region__: Región de AWS (ej. "us-east-1")
-
-  - __instance_type__: Tipo de instancia EC2 (ej. "t2.micro")
-
-  - __my_ip__: Tu IP pública con /32 para acceso SSH seguro
-
-  - __docker_images__: Lista de imágenes Docker (una por instancia)
-
-
-__3.  Inicializar Terraform.__
-
-```terraform init```  
-
-Esto descarga los proveedores necesarios y prepara el entorno.
-
-__4. Aplicar la infraestructura.__
-
-```terraform apply ``` 
-
-__Confirma con 'yes' cuando se te solicite. Esto desplegará:__
-- 3 instancias EC2 con contenedores Docker
-- Un Application Load Balancer
-- Grupos de seguridad y asociaciones
-                        
-
-__5. Acceder a la aplicación__
-
-Una vez finalizado el despliegue, copia el DNS del Load Balancer desde el output:
-
-```terraform output resumen_final```
-
-
-__Pega la URL en tu navegador y recarga la página varias veces para ver distintos tipos de queso.__
+# 2. Destruir Backend (Opcional, si quieres borrar el bucket)
+cd ../01_Bootstrap
+# Nota: El bucket debe estar vacío antes de borrarlo
+terraform destroy -auto-approve
+Desarrollado por: [Tu Nombre/Usuario] | Duoc UC
