@@ -1,0 +1,16 @@
+# Directorios locales de Terraform
+**/.terraform/*
+
+# Archivos de estado (State)
+*.tfstate
+*.tfstate.*
+
+# Archivos de variables con secretos
+*.tfvars
+!example.tfvars
+
+# Archivos de crash log
+crash.log
+
+# Archivos del sistema
+.DS_Store

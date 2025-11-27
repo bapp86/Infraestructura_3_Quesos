@@ -1,0 +1,38 @@
+# Configuración del proveedor
+provider "aws" {
+  region = var.aws_region
+}
+
+# 1. Módulo S3 para el estado de Terraform
+# Despliega un bucket S3 privado y versionado
+module "s3_backend" {
+  source = "terraform-aws-modules/s3-bucket/aws"
+
+  bucket = var.bucket_name
+  tags   = var.tags
+
+  # Requerimientos de seguridad 
+  # Requerimientos de seguridad (Bloqueo de acceso público)
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+  
+  versioning = {
+    enabled = true
+  }
+}
+
+# 2. Tabla DynamoDB para el bloqueo de estado
+resource "aws_dynamodb_table" "dynamodb_lock" {
+  name         = var.dynamodb_table_name
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "LockID" # Clave requerida por Terraform para el bloqueo
+
+  attribute {
+    name = "LockID"
+    type = "S"
+  }
+
+  tags = var.tags
+}
