@@ -6,12 +6,15 @@
 ![Status](https://img.shields.io/badge/status-stable-green?style=for-the-badge)
 
 > **Infraestructura como Código (IaC)** para el despliegue automatizado, seguro y escalable de la aplicación distribuida "The Cheese Factory".
+---
 
 ## 📋 Descripción del Proyecto
 
 Este repositorio contiene la definición declarativa de la infraestructura necesaria para ejecutar la aplicación web "The Cheese Factory" en Amazon Web Services (AWS).
 
 El proyecto demuestra competencias avanzadas en **DevOps**, implementando una arquitectura de 3 capas, gestión de estado remoto con bloqueo (State Locking), y principios de seguridad de **Mínimo Privilegio**.
+
+---
 
 ### 🏗️ Arquitectura de Alto Nivel
 
@@ -40,6 +43,8 @@ graph TD;
     Terraform -->|State Storage| S3_Bucket
 
 ```
+---
+
 ## 🚀 Características Técnicas
 
 Este despliegue cumple con estándares de industria:
@@ -52,6 +57,7 @@ Este despliegue cumple con estándares de industria:
 | **Seguridad (SG)** | **ALB:** Solo puerto 80 desde `0.0.0.0/0`. <br> **EC2:** Solo tráfico HTTP proveniente del Security Group del ALB. |
 | **Modularidad** | Uso de módulos oficiales verificados (`terraform-aws-modules`). |
 | **Lógica Condicional** | Adaptabilidad de entorno: `prod` (`t3.small`) vs `dev` (`t2.micro`). |
+---
 
 ## 📂 Estructura del Repositorio
 
@@ -75,6 +81,8 @@ El proyecto sigue una estrategia de **Monorepo** organizado en dos fases lógica
     ├── terraform.tfvars.example # Plantilla de ejemplo para otros desarrolladores
     └── Quesos                   # Archivos o recursos estáticos de la aplicación
 ```
+---
+
 ## 🛠️ Requisitos Previos
 
 Este entorno ha sido diseñado y validado bajo las siguientes especificaciones. Asegúrate de tenerlas para garantizar la compatibilidad:
